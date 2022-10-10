@@ -1,0 +1,11 @@
+EXE_INC = \
+    -I../momentumTransportModels/lnInclude \
+    -I$(WM_PROJECT_USER_DIR)/src/transportModels/lnInclude \
+    -I$(LIB_SRC)/finiteVolume/lnInclude \
+    -I$(LIB_SRC)/meshTools/lnInclude \
+
+LIB_LIBS = \
+    -ltransportModels \
+    -lmomentumTransportModels \
+    -lfiniteVolume \
+    -lmeshTools

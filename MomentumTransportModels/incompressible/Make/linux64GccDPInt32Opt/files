@@ -1,0 +1,6 @@
+SOURCE += incompressibleMomentumTransportModel.C
+
+SOURCE += kinematicMomentumTransportModels/kinematicMomentumTransportModels.C
+
+
+LIB = $(FOAM_USER_LIBBIN)/libmyIncompressibleMomentumTransportModels
