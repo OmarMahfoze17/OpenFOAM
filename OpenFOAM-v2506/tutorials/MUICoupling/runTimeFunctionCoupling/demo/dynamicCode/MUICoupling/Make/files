@@ -1,0 +1,6 @@
+/* dynamicCode:
+ * SHA1 = 1040b3e12ad0b3e226a07818e1f0094983067c7f
+ */
+functionObjectTemplate.C
+
+LIB = $(PWD)/../platforms/$(WM_OPTIONS)/lib/libMUICoupling_1040b3e12ad0b3e226a07818e1f0094983067c7f

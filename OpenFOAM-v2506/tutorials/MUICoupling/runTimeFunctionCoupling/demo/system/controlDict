@@ -1,0 +1,121 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2506                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+application     interFoam;
+
+startFrom       startTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         0.002;
+
+deltaT          0.001;
+
+writeControl    adjustable;
+
+writeInterval   0.05;
+
+purgeWrite      0;
+
+writeFormat     ascii;
+
+writePrecision  6;
+
+writeCompression off;
+
+timeFormat      general;
+
+timePrecision   6;
+
+runTimeModifiable yes;
+
+adjustTimeStep  yes;
+
+maxCo           1;
+
+maxAlphaCo      1;
+
+maxDeltaT       1;
+
+functions
+{
+    MUICoupling
+    {
+        libs ("libutilityFunctionObjects.so");
+        type coded;
+        name MUICoupling;
+        writeControl timeStep;
+
+	
+	codeInclude
+        #{
+            #include        "/media/omar/bb5bfc6d-a551-4b3e-9f47-2b7d74410f28/WORK/codes/MUI/src/mui.h"
+            #include        "../../system/muiconfig.h"
+        #};
+        ///////////////////////////////////////////////////////////////////////////////
+        //////// declare the variable that will be used by the functions. It is called once at the start /////////////
+        
+        
+        codeData
+        #{
+            int iterCount = 0 ; 
+            std::vector<std::unique_ptr<mui::uniface<mui::mui_config>>> mui_ifs;
+            mui::point3d push_point;
+            mui::point3d fetch_point;
+            mui::sampler_exact<mui::mui_config> spatial_sampler;
+            mui::temporal_sampler_exact<mui::mui_config> temporal_sampler;
+        
+        #};
+        
+        ///////////////////////////////////////////////////////////////////////////////
+        /// Every time step this part is called ////////////////
+        codeExecute
+        #{
+            
+ 	    double pushData = 100.0;
+	    double fetchData = 100.0;
+	    if (iterCount == 0) 
+	    {
+	        std::vector<std::string> ifsName;
+	        ifsName.emplace_back("ifs");
+	        Info <<  "OF creating MUI interface " << endl;
+	        mui_ifs=mui::create_uniface<mui::mui_config>( "OpenFOAM", ifsName );	    
+	        Info <<  "OF Finsihed  MUI interface " << endl;
+	    }	
+	    
+
+            // Fetch the value from the interface (blocking until data at "t" exists according to temporal_sampler)
+            fetch_point[0] = 0;fetch_point[1] = 0;fetch_point[2] = 0;
+            fetchData = mui_ifs[0]->fetch( "dataFromPing", fetch_point, iterCount, spatial_sampler, temporal_sampler );
+            pushData--;
+            // Push value stored in "state" to the MUI interface
+            push_point[0] = 0;push_point[1] = 0;push_point[2] = 0;
+            mui_ifs[0]->push( "dataFromOF", push_point, pushData );
+            // Commit (transmit by MPI) the value
+            mui_ifs[0]->commit( iterCount );	
+	
+	    Info << "zzzzzzzzzzzzzz OpenFoam at time "<< iterCount << " fitched "<< fetchData << endl;
+            Info<<"OpenFoam iterCount " << iterCount << endl;
+            iterCount = iterCount+1;
+
+        #};
+    }
+}
+
+
+// ************************************************************************* //
